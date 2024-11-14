@@ -15,6 +15,8 @@ import { ReactNativeModal } from "react-native-modal";
 import CostumeButton from "@/components/CostumeButton";
 import GoogleLoginBtn from "@/components/GoogleLoginBtn";
 import { images } from "@/constant/images";
+import axios from "axios";
+import { postApi } from "@/lib/fetch";
 
 const { height } = Dimensions.get("window");
 
@@ -117,9 +119,20 @@ const Signup = () => {
       });
 
       if (completeSignUp.status === "complete") {
+        await postApi("(api)/user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            clerkId: completeSignUp.createdUserId,
+          }),
+        });
+        Alert.alert("Success", "User created successfully.");
         await setActive({ session: completeSignUp.createdSessionId });
         setVerification({ ...verification, state: "success" });
-        setShowSuccessModal(true);
       } else {
         setVerification({
           ...verification,
@@ -199,11 +212,7 @@ const Signup = () => {
 
       <ReactNativeModal
         isVisible={verification.state === "pending"}
-        onModalHide={() => {
-          if (verification.state === "success") {
-            setShowSuccessModal(true);
-          }
-        }}
+        onModalHide={() => verification.state === "success"}
       >
         <View
           className="bg-white px-8 p-4 rounded-2xl"
@@ -239,10 +248,7 @@ const Signup = () => {
       </ReactNativeModal>
 
       {/* Success Modal */}
-      <ReactNativeModal
-        isVisible={showSuccessModal}
-        onModalHide={() => setShowSuccessModal(false)}
-      >
+      {/* <ReactNativeModal isVisible={showSuccessModal}>
         <View
           className="bg-white px-8 p-4 rounded-2xl flex-col items-center"
           style={{
@@ -264,7 +270,7 @@ const Signup = () => {
             onClick={() => router.push("/(root)/(tabs)/")}
           />
         </View>
-      </ReactNativeModal>
+      </ReactNativeModal> */}
     </ScrollView>
   );
 };

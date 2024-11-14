@@ -20,6 +20,8 @@ const Welcome = () => {
       <Swiper
         ref={swiperRef}
         loop={false}
+        showsButtons={true}
+        nextButton={true}
         onIndexChanged={(index: number) => setSwiperIndex(index)}
         dot={
           <View className=" w-[8vw] bg-gray-300 mx-2 rounded-full h-[0.5vh]" />
@@ -34,7 +36,11 @@ const Welcome = () => {
       </Swiper>
       <CostumeButton
         title={swiperIndex == 2 ? "get started" : "next"}
-        onClick={() => swiperIndex == 2 && router.push("/(auth)/login")}
+        onClick={() =>
+          swiperIndex == 2
+            ? router.push("/(auth)/login")
+            : setSwiperIndex((prev) => prev + 1)
+        }
         className=" w-[90%]"
       />
     </SafeAreaView>
