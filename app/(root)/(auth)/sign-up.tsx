@@ -15,7 +15,6 @@ import { ReactNativeModal } from "react-native-modal";
 import CostumeButton from "@/components/CostumeButton";
 import GoogleLoginBtn from "@/components/GoogleLoginBtn";
 import { images } from "@/constant/images";
-import axios from "axios";
 import { postApi } from "@/lib/fetch";
 
 const { height } = Dimensions.get("window");
@@ -77,77 +76,55 @@ const Signup = () => {
     setForm((prevForm) => ({ ...prevForm, [field]: value }));
   };
 
-  const validateForm = () => {
-    const { email, password } = form;
-    if (!form.name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert("Validation Error", "All fields are required.");
-      return false;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Validation Error", "Invalid email format.");
-      return false;
-    }
-    return true;
-  };
 
   const onSignUpPress = async () => {
-    if (!isLoaded || !validateForm()) return;
+    if (!isLoaded) {
+      return
+    }
 
     try {
       await signUp.create({
-        emailAddress: form.email,
-        password: form.password,
-      });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        emailAddress:form.email,
+        password:form.password,
+      })
+
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
+
       setVerification({ ...verification, state: "pending" });
     } catch (err: any) {
-      Alert.alert(
-        "Error",
-        err?.errors?.[0]?.longMessage ||
-          "Something went wrong. Please try again."
-      );
+      console.error(JSON.stringify(err, null, 2))
     }
-  };
+  }
 
   const onPressVerify = async () => {
-    if (!isLoaded || !verification.code.trim()) return;
+    if (!isLoaded) {
+      return
+    }
 
     try {
       const completeSignUp = await signUp.attemptEmailAddressVerification({
-        code: verification.code,
-      });
+        code:verification.code,
+      })
 
-      if (completeSignUp.status === "complete") {
-        await postApi("(api)/user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: form.name,
-            email: form.email,
-            clerkId: completeSignUp.createdUserId,
-          }),
-        });
-        Alert.alert("Success", "User created successfully.");
-        await setActive({ session: completeSignUp.createdSessionId });
+      if (completeSignUp.status === 'complete') {
+        await postApi("/(api)/user", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    name: form.name,
+                    email: form.email,
+                    clerkId: completeSignUp.createdUserId,
+                  }),
+                });
+        await setActive({ session: completeSignUp.createdSessionId })
         setVerification({ ...verification, state: "success" });
+        router.replace('/')
       } else {
-        setVerification({
-          ...verification,
-          error: "Verification failed. Please try again.",
-          state: "failed",
-        });
+        console.error(JSON.stringify(completeSignUp, null, 2))
       }
     } catch (err: any) {
-      setVerification({
-        ...verification,
-        error: err?.errors?.[0]?.longMessage || "Verification error.",
-        state: "failed",
-      });
+      console.error(JSON.stringify(err, null, 2))
     }
-  };
+  }
 
   return (
     <ScrollView className="flex-1 bg-white">
@@ -212,7 +189,11 @@ const Signup = () => {
 
       <ReactNativeModal
         isVisible={verification.state === "pending"}
-        onModalHide={() => verification.state === "success"}
+        onModalHide={() =>{
+          if( verification.state === "success"){
+            setShowSuccessModal(true)
+          }
+        }}
       >
         <View
           className="bg-white px-8 p-4 rounded-2xl"
@@ -248,7 +229,9 @@ const Signup = () => {
       </ReactNativeModal>
 
       {/* Success Modal */}
-      {/* <ReactNativeModal isVisible={showSuccessModal}>
+      <ReactNativeModal isVisible={showSuccessModal} onModalHide={()=>{
+        setShowSuccessModal(false)
+      }}>
         <View
           className="bg-white px-8 p-4 rounded-2xl flex-col items-center"
           style={{
@@ -270,7 +253,7 @@ const Signup = () => {
             onClick={() => router.push("/(root)/(tabs)/")}
           />
         </View>
-      </ReactNativeModal> */}
+      </ReactNativeModal>
     </ScrollView>
   );
 };

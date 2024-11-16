@@ -3,10 +3,7 @@ import { neon } from "@neondatabase/serverless";
 export async function POST(req: Request) {
   try {
     const sql = neon(process.env.DATABASE_URI!);
-    console.log("Database connection initialized.");
     const { name, email, clerkId } = await req.json();
-    console.log("Request Body:", { name, email, clerkId });
-
     // Validate request body
     if (!name || !email || !clerkId) {
       return new Response(
@@ -24,7 +21,6 @@ export async function POST(req: Request) {
     VALUES (${name}, ${email}, ${clerkId})
     RETURNING *;
   `;
-    console.log("Insert Response:", response);
 
     // Send success response
     return new Response(
