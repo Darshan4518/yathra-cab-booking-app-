@@ -1,26 +1,20 @@
-import { View, Text } from "react-native";
-import React from "react";
-import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
-import { Link } from "expo-router";
+import React, { lazy, Suspense } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+const HomeComonent = lazy(() => import("@/components/HomeComonent"));
 
 const Home = () => {
-  const { user } = useUser();
   return (
-    <SafeAreaView>
-      <View>
-        <SignedIn>
-          <Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
-        </SignedIn>
-        <SignedOut>
-          <Link href="/(auth)/sign-in">
-            <Text>Sign In</Text>
-          </Link>
-          <Link href="/(auth)/sign-up">
-            <Text>Sign Up</Text>
-          </Link>
-        </SignedOut>
-      </View>
+    <SafeAreaView className=" flex-1 bg-[#F6F8FA] p-3">
+      <Suspense
+        fallback={
+          <View>
+            <ActivityIndicator size={"large"} />
+          </View>
+        }
+      >
+        <HomeComonent />
+      </Suspense>
     </SafeAreaView>
   );
 };

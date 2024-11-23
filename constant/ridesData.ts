@@ -1,4 +1,4 @@
-[
+export const recentRides=[
     {
         "ride_id": "1",
         "origin_address": "Kathmandu, Nepal",
